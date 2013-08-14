@@ -32,21 +32,27 @@ else
     rm -Rf /download/boxeehack-master
     rm /download/boxeehack.zip
     cd /download
-	echo "Downloading boxeehack.zip" >> $BASEDIR/install.log
-    /opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.zip -o boxeehack.zip
-	echo "Downloading boxeehack.md5" >> $BASEDIR/install.log
-    /opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.md5 -o boxeehack.md5
-    md5_1=$(md5sum boxeehack.zip | awk '{print $1}')
-    md5_2=$(awk '{print $1}' "boxeehack.md5")
-	echo "MD5 of zip: $md5_1" >> $BASEDIR/install.log
-	echo "MD5 needed: $md5_2" >> $BASEDIR/install.log
-    if [ "$md5_1" != "$md5_2" ] ; then
-        echo "MD5s do not match, aborting" >> $BASEDIR/install.log
-		dtool 6 1 0 0
-		dtool 6 2 0 50
-        exit
-    fi
-
+	if [ -f /data/etc/downloadurl ]; then
+		DL_URL=`head -n 1 /data/etc/downloadurl`
+		echo "Downloading " $DL_URL >> $BASEDIR/install.log
+		/opt/local/bin/curl -L $DL_URL -o boxeehack.zip
+	else
+		echo "Downloading boxeehack.zip" >> $BASEDIR/install.log
+		/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.zip -o boxeehack.zip
+		echo "Downloading boxeehack.md5" >> $BASEDIR/install.log
+		/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.md5 -o boxeehack.md5
+		md5_1=$(md5sum boxeehack.zip | awk '{print $1}')
+		md5_2=$(awk '{print $1}' "boxeehack.md5")
+		echo "MD5 of zip: $md5_1" >> $BASEDIR/install.log
+		echo "MD5 needed: $md5_2" >> $BASEDIR/install.log
+		if [ "$md5_1" != "$md5_2" ] ; then
+			echo "MD5s do not match, aborting" >> $BASEDIR/install.log
+			dtool 6 1 0 0
+			dtool 6 2 0 50
+			exit
+		fi
+	fi
+	
 	# Extract the archive
 	echo "Unzipping boxeehack.zip" >> $BASEDIR/install.log
     /bin/busybox unzip boxeehack.zip
