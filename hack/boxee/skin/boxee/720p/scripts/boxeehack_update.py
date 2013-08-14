@@ -77,23 +77,28 @@ def update():
 		xbmc.executebuiltin("Notification(,Downloading Boxee+,120000)")
 
 		mc.ShowDialogWait()
-		os.system("/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.zip -o /download/boxeehack.zip")
-		os.system("/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.md5 -o /download/boxeehack.md5")
-		dm = common.file_get_contents("/download/boxeehack.md5")
-		os.system("md5sum /download/boxeehack.zip | awk '{ print $1 }'> /download/boxeehack.md52")
-		tm = common.file_get_contents("/download/boxeehack.md5")
-		mc.HideDialogWait()
-		if dm != tm or tm == "":
-			os.system("dtool 6 1 0 0")
-			os.system("dtool 6 2 0 50")
-			xbmc.executebuiltin("Notification(,Download Failed - Aborting,60000)")
-			return
+		if os.path.exists("/data/etc/downloadurl"):
+			dl_url = common.file_get_contents("/data/etc/downloadurl")
+			os.system("/opt/local/bin/curl -L " + dl_url + " -o /download/boxeehack.zip")
+		else:
+			os.system("/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.zip -o /download/boxeehack.zip")
+			os.system("/opt/local/bin/curl -L http://boxeed.in/boxeeplus/boxeehack.md5 -o /download/boxeehack.md5")
+			dm = common.file_get_contents("/download/boxeehack.md5")
+			os.system("md5sum /download/boxeehack.zip | awk '{ print $1 }'> /download/boxeehack.md52")
+			tm = common.file_get_contents("/download/boxeehack.md5")
+			mc.HideDialogWait()
+			if dm != tm or tm == "":
+				os.system("dtool 6 1 0 0")
+				os.system("dtool 6 2 0 50")
+				xbmc.executebuiltin("Notification(,Download Failed - Aborting,60000)")
+				return
+		
 		mc.ShowDialogNotification("Download Complete")
 		time.sleep(2)
 
 		xbmc.executebuiltin("Notification(,Extracting Archive,120000)")
 		mc.ShowDialogWait()
-		#os.system("/bin/busybox unzip /download/boxeehack.zip -d /download/")
+		os.system("/bin/busybox unzip /download/boxeehack.zip -d /download/")
 		mc.HideDialogWait()
 
 		mc.ShowDialogNotification("Extraction Complete")
